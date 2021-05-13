@@ -1,0 +1,147 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>机器学习之梯度下降</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><p></p><div class="toc"><h3>机器学习之梯度下降</h3><ul><ul><li><a href="#_3">梯度下降</a></li><ul><li><a href="#Tuning_your_learning_rates_16">调整学习率（Tuning your learning rates）</a></li><li><a href="#Adaptive_Learning_Rates_30">自适应学习率（Adaptive Learning Rates）</a></li><ul><li><a href="#Adagrad_36">Adagrad</a></li><li><a href="#Stochastic_Gradient_Descent_90">随机梯度下降（Stochastic Gradient Descent）</a></li><li><a href="#Feature_Scaling_101">特征缩放（Feature Scaling）</a></li></ul><li><a href="#_113">梯度下降中的数学</a></li><li><a href="#_126">梯度下降的限制</a></li><li><a href="#_129">作者简介</a></li></ul></ul></ul></div><p></p>
+<p><img src="https://img-blog.csdnimg.cn/20210319131403495.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h2><a id="_3"></a>梯度下降</h2>
+<p>我们需要寻找一个最合适的函数（模型）就需要找到一个最好的优化方法（optimization problem）。在实际的计算中我们会先定义一个Loss函数<br>
+<img src="https://img-blog.csdnimg.cn/20210319133005603.png" alt="在这里插入图片描述"></p>
+<ul>
+<li>当有两个参数时，我们需要随机选取两个值作为起点Randomly start at 𝜃<sup>0</sup>就是我们的初始点的位置<br>
+<img src="https://img-blog.csdnimg.cn/20210319132409862.png" alt="在这里插入图片描述"></li>
+<li>分别计算两个值的偏微分。接着初始值减去计算得到偏微分值最后得到了一组新的参数。然后以此类推就可以得到新的一系列的参数。<br>
+<img src="https://img-blog.csdnimg.cn/20210319132803189.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+终上所述得到的函数应该是：<br>
+<img src="https://img-blog.csdnimg.cn/20210319132931266.png" alt="在这里插入图片描述"></li>
+<li>使用图形展示就是：<br>
+<img src="https://img-blog.csdnimg.cn/20210319133227376.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></li>
+</ul>
+<h3><a id="Tuning_your_learning_rates_16"></a>调整学习率（Tuning your learning rates）</h3>
+<p><img src="https://img-blog.csdnimg.cn/20210319133855928.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<blockquote>
+<p>黑色的是Loss梯度曲线。<br>
+红色的是学习率 适度情况下最合适的方法。<br>
+蓝色的线是学习率过低，需要很长的时间去学习，不是很合适。<br>
+绿色的是学习率过大直接跳过了最合适的点。<br>
+黄色的直接跳过了整个loss范围。<br>
+终上所述：学习率的大小在loss的选取中非常的重要，有些时候可以说是至关重要。<br>
+如图的内容只能够展示1-2个参数的情况，3个及以上参数则无法用该办法展示。</p>
+</blockquote>
+<p>我们可以通过画出不同学习率和Loss之间关系的图来查看一个比较好的结果。<br>
+<img src="https://img-blog.csdnimg.cn/20210319134628394.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+通过上图的方式可以非常形象的看到各个系列之间的情况。</p>
+<h3><a id="Adaptive_Learning_Rates_30"></a>自适应学习率（Adaptive Learning Rates）</h3>
+<p>通常学习率是随着参数的更新而改变的（越来越小）<br>
+刚开始距离我们的最佳值距离比较大需要大跨步的进行追击，但是当距离越来越近为了不跨过最好的那个点，我们要放慢脚步逐步的去查找。然后就会出现随着参数数据的更新学习率越来越小。<br>
+比如我们可以把学习率设置成这样子：<br>
+<img src="https://img-blog.csdnimg.cn/20210319140212541.png" alt="在这里插入图片描述"><br>
+当然这种还是要看实际情况进行选择。</p>
+<h4><a id="Adagrad_36"></a>Adagrad</h4>
+<p>将每个参数的学习率除以其先前导数的均方根(Divide the learning rate of each parameter by the  root mean square of its previous derivatives)<br>
+我们先取任意一个参数w。计算改时间的学习率。<br>
+<img src="https://img-blog.csdnimg.cn/20210319141037868.png" alt="在这里插入图片描述"><br>
+<img src="https://img-blog.csdnimg.cn/20210319141214849.png" alt="在这里插入图片描述"></p>
+<blockquote>
+<p>𝜎<sup>𝑡</sup>：参数w之前导数的均方根</p>
+</blockquote>
+<p>紧接着拿w<sup>t</sup>减去之前的值。<br>
+<img src="https://img-blog.csdnimg.cn/20210319141432194.png" alt="在这里插入图片描述"><br>
+这个值里面的学习率是单独的，不同时间的w所对应的值都是不一样的<br>
+<img src="https://img-blog.csdnimg.cn/20210319141610814.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+举例解析：<br>
+假设初始值是w<sup>0</sup>，计算w<sup>0</sup>所在点的微分该点的学习率就是 𝜂<sup>0</sup>/𝜎<sup>0</sup>*g<sup>0</sup><br>
+其中：g<sup>0</sup> = 𝜕𝐿（𝜃<sup>0</sup>）/𝜕𝑤<br>
+<img src="https://img-blog.csdnimg.cn/20210319141914448.png" alt="在这里插入图片描述"><br>
+接下去我们继续计算w<sup>1</sup>的值<br>
+<img src="https://img-blog.csdnimg.cn/20210319142540585.png" alt="在这里插入图片描述"><br>
+继续计算w<sup>2</sup>的值<br>
+<img src="https://img-blog.csdnimg.cn/20210319142506771.png" alt="在这里插入图片描述"><br>
+以此类推：<br>
+<img src="https://img-blog.csdnimg.cn/20210319142611582.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+根据之前的规律我们可以把格式写出来：<br>
+<img src="https://img-blog.csdnimg.cn/20210319142916295.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+经过公式化简，可以得到最后的结果：<br>
+<img src="https://img-blog.csdnimg.cn/20210319143011910.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+该办法随着时间越来越长，最后下降的速度也会非常的慢需要大家看实际情况进行选择。</p>
+<blockquote>
+<p>号外、号外：李宏毅老师推荐<code>Adam</code>效果比较好比较稳定密码，适合小白，如果是大佬就自己根据实际情况进行 选择。</p>
+</blockquote>
+<p>参数和坡度（Gradient）也有关系，当Gradient越大参数就会越大。<br>
+在公式中学习率会越来越小但是Gradient会越来越大，造成了一种比较奇怪的地方。<br>
+解释一：这是一种反差。<br>
+官方解释：假设只有一个常数（如下图）我们选取的初始点（x<sub>0</sub>）的微分（切线）就是最合适的点<br>
+如下图x<sub>0</sub>跨一步最后的距离是到原点的距离，也就相当于x<sub>0</sub>的切线。<br>
+<img src="https://img-blog.csdnimg.cn/20210319144432117.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+当我们的微分越大也就代表它距离我们的原点就越远，踏出去的步伐最好就是和微分成正比 （前提就是只考虑一个参数）</p>
+<ul>
+<li>多个参数<br>
+当有两个参数时，我们只考虑w<sub>1</sub>时得到的结果确实是符合上面说的。<br>
+<img src="https://img-blog.csdnimg.cn/20210319145049335.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+我们看单独考虑w<sub>2</sub>时c和d也符合上面的结果。<br>
+<img src="https://img-blog.csdnimg.cn/20210319145248770.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+当我们跨象限进行查看，如a和c一起看。c的值比较大，a的值比较小，但是a距离远点比c更远。</li>
+</ul>
+<p><img src="https://img-blog.csdnimg.cn/20210319145554159.png" alt="在这里插入图片描述"><br>
+我们的计算公式中除了切线以外还有一个分母，那么这个分母有什么作用是怎么样来的？<br>
+<img src="https://img-blog.csdnimg.cn/20210319145636611.png" alt="在这里插入图片描述"><br>
+当我们做二次微分以后就得到了这样子一个分母，也就是一次微分和二次微分成反比<br>
+<img src="https://img-blog.csdnimg.cn/2021031914581173.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+当我们考虑了二次微分以后，不同的位置的角度和平滑度都会有所展示，表现的更加的具体。</p>
+<p><img src="https://img-blog.csdnimg.cn/20210319150315846.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+在Adagrad中利用分母的值（多个点的均方根）来反映二次导的大小。如果比较平滑多个值就会比较小，如果陡峭结果就会很大。</p>
+<h4><a id="Stochastic_Gradient_Descent_90"></a>随机梯度下降（Stochastic Gradient Descent）</h4>
+<p>普通的梯度下降：<br>
+<img src="https://img-blog.csdnimg.cn/20210319150753629.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+随机梯度下降：<br>
+随机取一轮计算我们的Loss，该Loss只考虑这个点的参数。<img src="https://img-blog.csdnimg.cn/20210319151016502.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+最后计算的时候只计算某个值的梯度下降情况<br>
+<img src="https://img-blog.csdnimg.cn/20210319151110829.png" alt="在这里插入图片描述"><br>
+两个梯度下降进行对比：<br>
+<img src="https://img-blog.csdnimg.cn/20210319151258612.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+左边计算完所有的数据才显示，右边的每次都显示虽然最后的结果可能比较无序，但是有20个不同的内容。<code>天下武功唯快不破</code>左边走了一步 右边已经走了20步。可能性就会更大。</p>
+<h4><a id="Feature_Scaling_101"></a>特征缩放（Feature Scaling）</h4>
+<p><img src="https://img-blog.csdnimg.cn/20210319151705940.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+如上图左边的比例不是对称的x<sub>1</sub>和x<sub>2</sub>比例不是对称的大小并不是一致，在特征缩放中建议把两边的值进行缩放，缩放到同一个比例内。<br>
+<img src="https://img-blog.csdnimg.cn/20210319151939893.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+假设x<sub>1</sub>和x<sub>2</sub>的比例相差比较大的时候，w<sub>1</sub>做大变动y才会有比较细微的变化然而w<sub>2</sub>做比较小的变化y就会有比较大的变化。<br>
+最后的结果和上图一样，w<sub>1</sub>上比较平滑，w<sub>2</sub>上比较陡峭。<br>
+<img src="https://img-blog.csdnimg.cn/20210319152356371.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+如果x<sub>1</sub>和x<sub>2</sub>是同 比例的比较接近的最后的结果都是比较平滑的。两边的影响力是相同的。最后获取 结果也是比较容易的<br>
+<img src="https://img-blog.csdnimg.cn/20210319152903227.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p>缩放最常见的就是把值减去平均值然后除以方差得到的最后结果均值都是0，方差都是1。</p>
+<h3><a id="_113"></a>梯度下降中的数学</h3>
+<p><img src="https://img-blog.csdnimg.cn/2021031915382215.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p>如何快速的求出我们某个点一定范围内最小的点？<br>
+<img src="https://img-blog.csdnimg.cn/20210319154116234.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p>可以通过上面的公式进行计算。<br>
+如果有多个值就可以用下面的公式：<br>
+<img src="https://img-blog.csdnimg.cn/20210319154636818.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+<img src="https://img-blog.csdnimg.cn/20210319154926708.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+<img src="https://img-blog.csdnimg.cn/20210319154935693.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+<img src="https://img-blog.csdnimg.cn/20210319154944209.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+<img src="https://img-blog.csdnimg.cn/20210319154957773.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h3><a id="_126"></a>梯度下降的限制</h3>
+<p>众所周知:有些时候他会卡在某个“最低值”（谷底）。有些时候会卡在不是谷底但是微分值是0的地方。很多时候虽然Loss值很低但是不一定是最低点。</p>
+<h3><a id="_129"></a>作者简介</h3>
+<blockquote>
+<p>作者：三岁<br>
+经历：自学python，现在混迹于paddle社区，希望和大家一起从基础走起，一起学习Paddle<br>
+csdn地址：https://blog.csdn.net/weixin_45623093/article/list/3<br>
+我在AI Studio上获得钻石等级，点亮7个徽章，来互关呀~ https://aistudio.baidu.com/aistudio/personalcenter/thirdview/284366</p>
+</blockquote>
+<blockquote>
+<p>传说中的飞桨社区最菜代码人，让我们一起努力！<br>
+记住：三岁出品必是精品 （<s>不要脸系列</s>）</p>
+</blockquote>
+</div>
+</body>
+
+</html>

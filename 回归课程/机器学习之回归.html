@@ -1,0 +1,284 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>机器学习之回归</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><p></p><div class="toc"><h3>机器学习之回归</h3><ul><ul><ul><li><a href="#AI_2">什么是人工智能（AI）</a></li></ul><li><a href="#_35">回归</a></li><ul><li><a href="#_37">第一步：构建模型</a></li><li><a href="#_40">第二部：功能完善</a></li><li><a href="#_45">第三步：选取最好的结果</a></li><li><a href="#loss_50">loss</a></li><li><a href="#_81">结果展示</a></li><li><a href="#_96">模型调整</a></li><li><a href="#_118">过拟合</a></li><li><a href="#loss_127">丝滑的loss</a></li><li><a href="#_138">项目解析（宝可梦训练师版本)</a></li><li><a href="#_228">误差的由来</a></li><ul><li><a href="#varance_246">`varance`对结果的影响</a></li><li><a href="#bias_254">`bias`对结果的影像</a></li></ul><li><a href="#_259">欠拟合与过拟合</a></li><li><a href="#_284">作者简介</a></li></ul></ul></ul></div><p></p>
+<h3><a id="AI_2"></a>什么是人工智能（AI）</h3>
+<p>人工智能（AI）长远以来的目标：<strong>希望机器可以和人一样聪明。</strong></p>
+<p>机器学习的三要素：</p>
+<ul>
+<li>确定一个函数</li>
+<li>选择一个度量值用于衡量一个方法</li>
+<li>一个好的算法从中选择最好的结果</li>
+</ul>
+<blockquote>
+<p>什么是人工智能的学习呢？<br>
+并不是那种已经计划好的<strong>使用判语句</strong>进行处理的内容，那种“人工智能”就类似于我们说的“<strong>人工智障</strong>”，只能够处理预期的内容，其他的一概不会。到最后啼笑皆非。</p>
+<ul>
+<li>真正的人工智能需要经过模型的定义通过大量数据的学习后认知和了解有关的特征，最后可以对没有见过的数据进行预测。</li>
+<li>原理：人类认知事物是有一个时间的，通过不断的摸索才能够获得有关的知识与认知。而人工智能就是模仿人类对事物的认知来进行训练的。</li>
+</ul>
+<ul>
+<li>举例：第一个吃螃蟹的人，在观察事物中不断的探索，最后经过大家的不断尝试 确认螃蟹是可以吃的，但是不是每个人都可以吃，有些 人会过敏！<br>
+而人工智能就是把大量的数据存入模型让模型去训练，一遍遍的探索，最后获得一个比较好的认知结果。有可能把数据放进模型经过几千轮的迭代就类似于人类数百年的学习和探索。<br>
+<strong>注：</strong> 以上内容源于个人理解！</li>
+</ul>
+</blockquote>
+<p>不同的内容学习办法、学习方式、获得结果也不尽相同。<br>
+回归：<br>
+通过以前的一些数据对未来的数据进行预测，得到的输出是一个结果。<br>
+最经典的：波士顿房价预测</p>
+<p>分类：<br>
+通过输出可以分为：二分类和多分类。<br>
+二分类：得到两个输出，类似于yes or no。<br>
+多分类：需要一个列表，输出的是列表中每个数据的可能性。</p>
+<p>除了上面属于监督式学习还有半监式、非监督式、迁移学习、强化学习……</p>
+<p><img src="https://img-blog.csdnimg.cn/20210315211527563.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+以上是目前AI道路上的主要或主流学习方式内方法，需要更据实际情况进行学习和参考，通过不断积累的经验进行训练和强化，才能够获得更好的<code>model</code>才能够有更加优秀的人工智能产品。</p>
+<h2><a id="_35"></a>回归</h2>
+<p>(小期许：期待李老师早日回归 （私货）)</p>
+<h3><a id="_37"></a>第一步：构建模型</h3>
+<p><img src="https://img-blog.csdnimg.cn/2021031522023528.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+根据一个实际情况对模型进行构建。如上图就构建了一个二元一次的线性模型。里面对<code>w</code>和<code>b</code>是未知的需要我们的模型进行一个列举然后获得对应的结果。</p>
+<h3><a id="_40"></a>第二部：功能完善</h3>
+<p><img src="https://img-blog.csdnimg.cn/20210315220510118.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+<img src="https://img-blog.csdnimg.cn/20210315220612133.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p>通过数据处理与查看，进一步了解我们所需要的内容，对数据进行处理和对模型的完善。</p>
+<h3><a id="_45"></a>第三步：选取最好的结果</h3>
+<p><img src="https://img-blog.csdnimg.cn/20210315220012984.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+通过对模型的训练我们可以通过优化函数找到我们效果最好的那个值并且把他应用于我们的模型中。</p>
+<h3><a id="loss_50"></a>loss</h3>
+<ul>
+<li>一个未知数的loss变化：<br>
+<img src="https://img-blog.csdnimg.cn/20210315222011664.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></li>
+</ul>
+<p>我们通过学习率和所在的切线<code>dL/dw</code>（微分）的乘积得到我们需要“走”（移动）的距离然后和原数据的差距就可以到下一个点然后继续之前的步骤，直到到达最低点</p>
+<p><img src="https://img-blog.csdnimg.cn/20210315222222458.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+如上图所示当移动到<code>wT</code>点时数据就会停下来。因为无论学习率和斜率的乘积都是0就不会运动了，这个就是目前的一个结果。</p>
+<ul>
+<li>两个未知数的loss<br>
+<img src="https://img-blog.csdnimg.cn/20210315223245410.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></li>
+</ul>
+<p>先初始化两值<code>w0</code>、<code>b0</code><br>
+接着计算：<br>
+<code>w = w0 ; b = b0</code>时w对loss的偏微分，b对loss的偏微分。<br>
+更新参数：<br>
+<code>w1 = w0 - 学习率 * w对loss的偏微分</code><br>
+<code>b1 = b0 - 学习率 * b对loss的偏微分</code><br>
+通过不断的更新就可以找到loss相对比较小的值。<br>
+<img src="https://img-blog.csdnimg.cn/20210315223307245.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+下图就是以上内容的图像表达：<br>
+<img src="https://img-blog.csdnimg.cn/20210315223535370.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+每个点的微分方向就是所在点切线的法线上</p>
+<ul>
+<li>如果数据和下图那么就会出现两个不一样的"最优值"。<br>
+<img src="https://img-blog.csdnimg.cn/20210315224058190.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+我们通过<code>𝜕𝐿/𝜕𝑤 and Τ𝜕/𝜕𝑏</code>来进行查看<br>
+<img src="https://img-blog.csdnimg.cn/20210315224505126.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+通过微分的计算可以得到我们想要的结果。</li>
+</ul>
+<h3><a id="_81"></a>结果展示</h3>
+<p>通过loss获取最好的结果得到数据然后进行还原以后得到了下图：<br>
+<img src="https://img-blog.csdnimg.cn/20210315224709411.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+<code>y = 2.7 * x -188.4</code></p>
+<p>以上结果可以看出来数据没有完全预测得到我们想要的结果。<br>
+我们可以计算<code>error</code>的值来对计算的优劣成果进行评价<br>
+<code>error</code>的值等于每个点到预测线的距离的平均值</p>
+<p>我们这个误差值是否具有代表性？结果是不一定！</p>
+<p>我们需要找到其他的未经过测试的结果来进一步的预测。</p>
+<p>通过比较两个<code>error</code>之间的值来比较模型的优劣。</p>
+<h3><a id="_96"></a>模型调整</h3>
+<p>上面的数据对最后的结果并不满意需要进一步的提高 就要对原本的模型进行调整。</p>
+<ul>
+<li>
+<p>改成二元二次方程。<br>
+<code>y = b + w1 * xcp +	w2 * (xcp) ^2</code><br>
+<img src="https://img-blog.csdnimg.cn/20210315225817766.png" alt="在这里插入图片描述"><br>
+通过新的模型进行学习实际的结果可以证明新的模型效果比旧的好。<br>
+<img src="https://img-blog.csdnimg.cn/20210315225943265.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+error 的值也进一步得到了提高</p>
+</li>
+<li>
+<p>改成二元三次方程。<br>
+<code>y = b + w1 * xcp +	w2 * (xcp) ^2 + w3 * (xcp)^3</code><br>
+<img src="https://img-blog.csdnimg.cn/20210315230055818.png" alt="在这里插入图片描述"><br>
+<img src="https://img-blog.csdnimg.cn/20210315230114209.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+结果虽然和第二个模型相差不大，但是也是有一定的效果的。</p>
+</li>
+<li>
+<p>改成二元四次方程。<br>
+<code>y = b + w1 * xcp +	w2 * (xcp) ^2 + w3 * (xcp)^3 + w4 * (xcp)^4</code><br>
+<img src="https://img-blog.csdnimg.cn/20210315230309399.png" alt="在这里插入图片描述"><br>
+<img src="https://img-blog.csdnimg.cn/20210315230318426.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+</li>
+<li>
+<p>继续使用更复杂的模型。</p>
+</li>
+</ul>
+<p><img src="https://img-blog.csdnimg.cn/20210315230534523.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+通过最后两个模型的比较发现数据变得更差的error的预测值更加的糟糕了。</p>
+<h3><a id="_118"></a>过拟合</h3>
+<p><img src="https://img-blog.csdnimg.cn/20210315230823409.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+越复杂的模型最后的效果反而 更加的差了。<br>
+这种现象叫做<strong>过拟合</strong><br>
+<img src="https://img-blog.csdnimg.cn/20210315230922483.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<blockquote>
+<p>过拟合：就是类似于老师上课把期末考试的卷子一直重复，你可以把试卷倒背如流，期末考试考的一定是满分或者非常高的分数，但是不巧，试卷换了，最后用的卷子和你平时背的完全不一样，最后成绩特别差，这种情况就是过拟合。</p>
+</blockquote>
+<p>模型过于复杂并不是一件好事情，说不定效果会更差。需要找一个合适的模型。</p>
+<h3><a id="loss_127"></a>丝滑的loss</h3>
+<p>当模型比较复杂时loss的计算方式会影响最后取的最优解的值。如果让loss稍微平滑一点，没有那么大的波动，说不定就不会跳过那个属于他的 <code>真命天子</code>了。<br>
+<img src="https://img-blog.csdnimg.cn/20210315232131559.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+通过添加后面那个值可以一点程度上修改loss<code>莽撞</code>的性格，使得他更加的平滑和委婉。<br>
+<img src="https://img-blog.csdnimg.cn/20210315232413468.png" alt="在这里插入图片描述"><br>
+使用了<code>平滑器</code>当<code>wi</code>越小越接近于0，他减缓的速度就会越慢。越来越平滑。<br>
+这样子的数据相对来说受到的干扰会更小，不会因为一些没有用的内容而受到较大的干扰。<br>
+<img src="https://img-blog.csdnimg.cn/20210315232822971.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+根据实际的情况进行测试以后发现，这种平滑器是比较有效果的是，但是对于的值在合理范围不能够太大，当值过大以后就越考虑输入的w本来的值减少考虑<code>error</code>的值。不利于接下去对其他数据的预测。</p>
+<h3><a id="_138"></a>项目解析（宝可梦训练师版本)</h3>
+<pre><code class="prism language-python"><span class="token comment"># 导入第三方库</span>
+<span class="token keyword">import</span> numpy <span class="token keyword">as</span> np 
+<span class="token keyword">import</span> matplotlib<span class="token punctuation">.</span>pyplot <span class="token keyword">as</span> plt
+</code></pre>
+<pre><code class="prism language-python"><span class="token comment"># 定义初始数据</span>
+x_data <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">338</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">333</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">328</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">207</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">226</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">25</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">179</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">60</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">208</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">606</span><span class="token punctuation">.</span><span class="token punctuation">]</span>
+y_data <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">640</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">633</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">619</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">393</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">428</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">27</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">193</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">66</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">226</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">1591</span><span class="token punctuation">.</span><span class="token punctuation">]</span>
+<span class="token comment"># ydata = b+w * xdata</span>
+</code></pre>
+<pre><code class="prism language-python">x <span class="token operator">=</span> np<span class="token punctuation">.</span>arange<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">200</span><span class="token punctuation">,</span><span class="token operator">-</span><span class="token number">100</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span>  <span class="token comment"># 偏差</span>
+y <span class="token operator">=</span> np<span class="token punctuation">.</span>arange<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">0.1</span><span class="token punctuation">)</span>  <span class="token comment"># 权重</span>
+<span class="token comment"># print(x[:10],y[:10])  # 查看数据</span>
+z <span class="token operator">=</span> np<span class="token punctuation">.</span>zeros<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 创建空数组,大小是(len(x),len(y))</span>
+X<span class="token punctuation">,</span> Y <span class="token operator">=</span> np<span class="token punctuation">.</span>meshgrid<span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">)</span>
+<span class="token comment"># print(x.shape)</span>
+</code></pre>
+<p><code>x, y = np.meshgrid(x, y)</code>:两组数值生成相同的维度。  看下图自己理解一下<br>
+<img src="https://img-blog.csdnimg.cn/20210316001302111.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<pre><code class="prism language-python">a <span class="token operator">=</span> np<span class="token punctuation">.</span>array<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+b <span class="token operator">=</span> np<span class="token punctuation">.</span>array<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+A<span class="token punctuation">,</span> B <span class="token operator">=</span> np<span class="token punctuation">.</span>meshgrid<span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>A<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>B<span class="token punctuation">)</span>
+</code></pre>
+<blockquote>
+<p>[[0 1 2]<br>
+[0 1 2]]<br>
+[[0 0 0]<br>
+[1 1 1]]</p>
+</blockquote>
+<pre><code class="prism language-python"><span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>  <span class="token comment"># 循环len(x)次</span>
+    <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        b <span class="token operator">=</span> x<span class="token punctuation">[</span>i<span class="token punctuation">]</span>  <span class="token comment"># b = 遍历的x</span>
+        w <span class="token operator">=</span> y<span class="token punctuation">[</span>j<span class="token punctuation">]</span>
+        z<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span>
+        <span class="token keyword">for</span> n <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>x_data<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            z<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> z<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token punctuation">(</span>y_data<span class="token punctuation">[</span>n<span class="token punctuation">]</span> <span class="token operator">-</span> b <span class="token operator">-</span> w<span class="token operator">*</span>x_data<span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token operator">**</span><span class="token number">2</span>
+            
+        z<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> z<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token operator">/</span><span class="token builtin">len</span><span class="token punctuation">(</span>x_data<span class="token punctuation">)</span> 
+<span class="token comment"># print(z.shape)</span>
+</code></pre>
+<pre><code class="prism language-python">b <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">120</span>  <span class="token comment"># 初始值</span>
+w <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">4</span>  <span class="token comment"># 初始值</span>
+lr <span class="token operator">=</span> <span class="token number">0.0000001</span>  <span class="token comment"># 学习率</span>
+itration <span class="token operator">=</span> <span class="token number">100000</span>  <span class="token comment"># 学习次数</span>
+
+<span class="token comment"># 存储绘图的初始化</span>
+b_history <span class="token operator">=</span> <span class="token punctuation">[</span>b<span class="token punctuation">]</span>
+w_history <span class="token operator">=</span> <span class="token punctuation">[</span>w<span class="token punctuation">]</span>
+
+<span class="token comment"># 计算各点b和w的偏微分</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>itration<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    b_grad <span class="token operator">=</span> <span class="token number">0.0</span>
+    w_grad <span class="token operator">=</span> <span class="token number">0.0</span>
+    <span class="token keyword">for</span> n <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>x_data<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        b_grad <span class="token operator">=</span> b_grad <span class="token operator">-</span> <span class="token number">0.2</span><span class="token operator">*</span><span class="token punctuation">(</span>y_data<span class="token punctuation">[</span>n<span class="token punctuation">]</span> <span class="token operator">-</span> b <span class="token operator">-</span> w<span class="token operator">*</span>x_data<span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token operator">*</span><span class="token number">1.0</span>
+        w_grad <span class="token operator">=</span> w_grad <span class="token operator">-</span> <span class="token number">0.2</span><span class="token operator">*</span><span class="token punctuation">(</span>y_data<span class="token punctuation">[</span>n<span class="token punctuation">]</span> <span class="token operator">-</span> b <span class="token operator">-</span> w<span class="token operator">*</span>x_data<span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token operator">*</span>x_data<span class="token punctuation">[</span>n<span class="token punctuation">]</span>
+    <span class="token comment"># 更新参数</span>
+    b <span class="token operator">=</span> b <span class="token operator">-</span> lr <span class="token operator">*</span> b_grad
+    w <span class="token operator">=</span> w <span class="token operator">-</span> lr <span class="token operator">*</span> w_grad
+    <span class="token comment"># 存储绘图参数</span>
+    b_history<span class="token punctuation">.</span>append<span class="token punctuation">(</span>b<span class="token punctuation">)</span>
+    w_history<span class="token punctuation">.</span>append<span class="token punctuation">(</span>w<span class="token punctuation">)</span>
+</code></pre>
+<pre><code class="prism language-python">plt<span class="token punctuation">.</span>contourf<span class="token punctuation">(</span>x<span class="token punctuation">,</span>y<span class="token punctuation">,</span>z<span class="token punctuation">,</span><span class="token number">50</span><span class="token punctuation">,</span>alpha<span class="token operator">=</span><span class="token number">0.5</span><span class="token punctuation">,</span> cmap<span class="token operator">=</span>plt<span class="token punctuation">.</span>get_cmap<span class="token punctuation">(</span><span class="token string">'jet'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment">#坐标：[-188.4],[2.67]，color：线条颜色</span>
+plt<span class="token punctuation">.</span>plot<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">188.4</span><span class="token punctuation">]</span><span class="token punctuation">,</span><span class="token punctuation">[</span><span class="token number">2.67</span><span class="token punctuation">]</span><span class="token punctuation">,</span><span class="token string">'x'</span><span class="token punctuation">,</span> ms<span class="token operator">=</span><span class="token number">12</span><span class="token punctuation">,</span> markeredgewidth<span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">,</span> color<span class="token operator">=</span><span class="token string">'orange'</span><span class="token punctuation">)</span>
+plt<span class="token punctuation">.</span>plot<span class="token punctuation">(</span>b_history<span class="token punctuation">,</span>w_history<span class="token punctuation">,</span><span class="token string">'o-'</span><span class="token punctuation">,</span> ms<span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">,</span> lw<span class="token operator">=</span><span class="token number">1.5</span><span class="token punctuation">,</span> color<span class="token operator">=</span><span class="token string">'black'</span><span class="token punctuation">)</span>
+plt<span class="token punctuation">.</span>xlim<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">200</span><span class="token punctuation">,</span><span class="token operator">-</span><span class="token number">100</span><span class="token punctuation">)</span>
+plt<span class="token punctuation">.</span>ylim<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">5</span><span class="token punctuation">,</span><span class="token number">5</span><span class="token punctuation">)</span>
+<span class="token comment">#设置横纵坐标的名称以及对应字体格式</span>
+plt<span class="token punctuation">.</span>xlabel<span class="token punctuation">(</span>r<span class="token string">'$b$'</span><span class="token punctuation">,</span> fontsize <span class="token operator">=</span><span class="token number">16</span><span class="token punctuation">)</span>
+plt<span class="token punctuation">.</span>ylabel<span class="token punctuation">(</span>r<span class="token string">'$w$'</span><span class="token punctuation">,</span> fontsize <span class="token operator">=</span><span class="token number">16</span><span class="token punctuation">)</span>
+</code></pre>
+<blockquote>
+<p>Text(0,0.5,’<span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>w</mi></mrow><annotation encoding="application/x-tex">w</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.43056em; vertical-align: 0em;"></span><span class="mord mathdefault" style="margin-right: 0.02691em;">w</span></span></span></span></span>’)<br>
+<img src="https://img-blog.csdnimg.cn/20210316102448530.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+</blockquote>
+<h3><a id="_228"></a>误差的由来</h3>
+<font size="3">
+</font><p>在上面的学习中，我们已经知道了并不是模型越好效果就越好，还是要在一定的程度上才可以。</p>
+<p>我们预测的值和实际的预期的值是有差距的。</p>
+<p><img src="https://img-blog.csdnimg.cn/20210316092039503.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+模型训练后我们预期的值是<code>f^</code>但是预测结束以后得到的结果却是<code>f*</code>，里面有一定的距离差。<br>
+这个差距的由来可能来自两个原因：<code>bias</code>和<code>varance</code></p>
+<p>最后的结果不一定与预期值相同，但是会散落在预期值周围。<br>
+<img src="https://img-blog.csdnimg.cn/20210316092656724.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+但我们对<code>bias</code>（偏差）进行计算以后可以 得到离散的程度。<br>
+他和数据的样本量有关系。样本量越多离散程度越低，样本量越高离散程度越高。</p>
+<p>然后对<code>varance</code>  （方差）进行计算。<br>
+<img src="https://img-blog.csdnimg.cn/20210316093118146.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyMzA5Mw==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h4><a id="varance_246"></a><code>varance</code>对结果的影响</h4>
+<p>他的误差可能是结果没有取好，类似于打靶没有瞄准靶心，也就是效果 不是非常的模型，还有可能就是模型的方差很大，比较离散，没有聚拢。</p>
+<p>当模型比较简单是<code>varance</code>值是比较小的，当模型复杂以后<code>varance</code>会散布的更加的开。</p>
+<p>模型越复杂都到data的影响就越多，最后的结果也越多。</p>
+<blockquote>
+<p>类似于在室内打靶收到的影响只有自己的发挥和器械的精度，相对应只有两个变量。但是在室外，涉及到风速、空气湿度，光线 折射度、距离……因素影响，最后的效果偏差肯定也是比较大的。</p>
+</blockquote>
+<h4><a id="bias_254"></a><code>bias</code>对结果的影像</h4>
+<p><code>bias</code>越小说明离散程度越高，当模型简单时<code>bais</code>是比较大的。当模型复杂以后最后的<code>bais</code>会比较小。</p>
+<blockquote>
+<p><code>bias</code>类似于套圈圈的游戏，你的模型比较简单，谁然比较集中的投掷某一个物品，但是由于各种偏差，能够投中的概率还是很低的，如果力道不对偏差的位置多那么输入集中但是距离既定目标还是很远的。<br>
+如果大量的数据分开来会散落在既定目标周边，那么大家平均以后的结果就会越接近我们的目标值，说不定还会有意外收获。</p>
+</blockquote>
+<h3><a id="_259"></a>欠拟合与过拟合</h3>
+<ul>
+<li>如果你的模型甚至不能适应训练的例子，那么你就有很大的偏差（<strong>欠拟合</strong>）</li>
+<li>如果你能拟合训练数据，但测试数据误差很大，那么你可能有很大的方差（<strong>过拟合</strong>）</li>
+</ul>
+<p>对于<strong>欠拟合</strong>，重新设计你的模型:<br>
+• 添加更多的功能作为输入<br>
+• 一个更复杂的模型</p>
+<p>对于<strong>过拟合</strong>，增加我们的<code>data</code><br>
+方法一：这个办法不是万能的，但是是一个不错的选择。<br>
+如果<code>data</code>数量有限，可以适当的使用数据增强（增广）<br>
+方法二：使用正则化，使得数据 更加的平滑。<br>
+对应的<code>bias</code>会受到影响。</p>
+<hr>
+<p>回归的内容就到这里了！</p>
+<p>参考资料：<br>
+<a href="https://aistudio.baidu.com/aistudio/education/group/info/1978">李宏毅老师课程-机器学习</a><br>
+<a href="https://aistudio.baidu.com/aistudio/projectdetail/1422364">李宏毅课程笔记（一）——回归演示demo（super松·著）</a><br>
+<a href="https://aistudio.baidu.com/aistudio/projectdetail/1663698">机器学习回归之路项目</a></p>
+<hr>
+<h3><a id="_284"></a>作者简介</h3>
+<blockquote>
+<p>作者：三岁<br>
+经历：自学python，现在混迹于paddle社区，希望和大家一起从基础走起，一起学习Paddle<br>
+csdn地址：https://blog.csdn.net/weixin_45623093/article/list/3<br>
+我在AI Studio上获得钻石等级，点亮7个徽章，来互关呀~ https://aistudio.baidu.com/aistudio/personalcenter/thirdview/284366</p>
+</blockquote>
+<blockquote>
+<p>传说中的飞桨社区最菜代码人，让我们一起努力！<br>
+记住：三岁出品必是精品 （<s>不要脸系列</s>）</p>
+</blockquote>
+</div>
+</body>
+
+</html>
